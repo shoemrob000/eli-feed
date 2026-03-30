@@ -4,10 +4,9 @@
 Queries Monday.com for approved opportunities, writes index.html (listing page)
 and individual jobs/{slug}.html pages (one per opportunity).
 
-JBoard's web scraper reads JobPosting JSON-LD directly from the listing page URL
-it is given -- it does NOT follow links. The listing page must contain a JSON-LD
-block for every job. Individual pages are kept for Google for Jobs indexing and
-as landing pages for shared links.
+All JobPosting JSON-LD is placed in <head> for maximum parser compatibility.
+The listing page carries a single JSON array of all JobPosting objects in <head>;
+individual pages each carry one JobPosting object in <head>.
 
 Requires: MONDAY_API_TOKEN environment variable
 Run from: eli-feed repo root
@@ -217,7 +216,7 @@ def build_jsonld(item, page_url):
     date_posted = date_found or date.today().isoformat()
 
     jsonld = {
-        "@context": "https://schema.org/",
+        "@context": "https://schema.org",
         "@type": "JobPosting",
         "title": title,
         "description": description or f"Community leadership opportunity: {title}",
@@ -255,8 +254,9 @@ def build_jsonld(item, page_url):
 def generate_job_page(item, slug):
     """Return full HTML for a single job detail page at jobs/{slug}.html.
 
-    This is what JBoard's scraper visits after following the link from the
-    listing page. It contains one JobPosting JSON-LD block inside <body>.
+    Contains one JobPosting JSON-LD block in <head> for maximum parser
+    compatibility.  JBoard's headless browser visits these pages after
+    following links from the listing page.
     """
     title        = item.get("name", "Untitled Opportunity")
     org          = item.get("text_mm1xtwvz", "")
@@ -302,7 +302,6 @@ def generate_job_page(item, slug):
         if apply_url else ""
     )
 
-    # Preserve line breaks in description for readability
     desc_html = description.replace("\n", "<br>") if description else \
         f"Community leadership opportunity: {title}"
 
@@ -322,6 +321,7 @@ def generate_job_page(item, slug):
         .back-link:hover {{ text-decoration: underline; }}
         .card-footer {{ margin-top: 1.5rem; }}
     </style>
+    <script type="application/ld+json">{jsonld_block}</script>
 </head>
 <body>
     <header>
@@ -340,7 +340,6 @@ def generate_job_page(item, slug):
             <div class="description">{desc_html}</div>
             {details}
             <div class="card-footer">{apply_btn}</div>
-            <script type="application/ld+json">{jsonld_block}</script>
         </article>
     </div>
     <footer>
@@ -358,11 +357,12 @@ def generate_job_page(item, slug):
 def generate_html(items):
     """Return full HTML for the index listing page.
 
-    Each card includes a JobPosting JSON-LD block so JBoard's scraper (which
-    reads structured data directly from the listing page) can detect every job.
-    Title links also point to individual jobs/{slug}.html pages for SEO.
+    All JobPosting JSON-LD is collected into a single <script> array in <head>
+    so any structured-data parser (JBoard, Google, etc.) finds it reliably.
+    Title links point to individual jobs/{slug}.html pages using absolute URLs.
     """
     cards_html = ""
+    all_jsonld = []
 
     for item in items:
         title        = item.get("name", "")
@@ -410,10 +410,8 @@ def generate_html(items):
                 cs += f' (<a href="mailto:{contact_email}">{contact_email}</a>)'
             details += f'<p class="detail"><strong>Contact:</strong> {cs}</p>'
 
-        # JSON-LD embedded in each card so JBoard reads it from the listing page
         page_url = f"{BASE_URL}/jobs/{slug}.html"
-        jsonld = build_jsonld(item, page_url)
-        jsonld_block = f'<script type="application/ld+json">{json.dumps(jsonld, indent=2)}</script>'
+        all_jsonld.append(build_jsonld(item, page_url))
 
         cards_html += f"""
         <article class="opp-card" id="{slug}">
@@ -421,14 +419,17 @@ def generate_html(items):
                 <span class="category-badge" style="color:{badge_fg};background:{badge_bg}">{category}</span>
                 <span class="org">{org}</span>
             </div>
-            <h2><a href="jobs/{slug}.html">{title}</a></h2>
+            <h2><a href="{page_url}">{title}</a></h2>
             <div class="pills">{pills}</div>
             <p class="desc">{desc_preview}</p>
             {details}
             <div class="card-footer">{apply_btn}</div>
-            {jsonld_block}
         </article>
         """
+
+    jsonld_head_block = ""
+    if all_jsonld:
+        jsonld_head_block = f'<script type="application/ld+json">{json.dumps(all_jsonld, indent=2)}</script>'
 
     today = date.today().isoformat()
     count = len(items)
@@ -469,6 +470,7 @@ def generate_html(items):
         .empty-state {{ text-align: center; padding: 3rem 1rem; color: var(--text-muted); }}
         @media (max-width: 600px) {{ .opp-card {{ padding: 1rem; }} }}
     </style>
+    {jsonld_head_block}
 </head>
 <body>
     <header>
