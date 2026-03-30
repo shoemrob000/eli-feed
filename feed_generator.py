@@ -171,7 +171,6 @@ def build_jsonld(item):
 
 def generate_html(items):
     cards_html = ""
-    jsonld_scripts = ""
 
     for item in items:
         title = item.get("name", "")
@@ -210,6 +209,9 @@ def generate_html(items):
             cs = contact + (f' (<a href="mailto:{contact_email}">{contact_email}</a>)' if contact_email else "")
             details += f'<p class="detail"><strong>Contact:</strong> {cs}</p>'
 
+        # JSON-LD embedded inside the card so body-scanning scrapers (JBoard) find it
+        jsonld_block = f'<script type="application/ld+json">{json.dumps(build_jsonld(item), indent=2)}</script>'
+
         cards_html += f"""
         <article class="opp-card" id="{slug}">
             <div class="card-header">
@@ -221,9 +223,9 @@ def generate_html(items):
             <p class="desc">{desc_preview}</p>
             {details}
             <div class="card-footer">{apply_btn}</div>
+            {jsonld_block}
         </article>
         """
-        jsonld_scripts += f'<script type="application/ld+json">{json.dumps(build_jsonld(item), indent=2)}</script>\n'
 
     today = date.today().isoformat()
     count = len(items)
@@ -236,7 +238,6 @@ def generate_html(items):
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eastside Leadership Initiative - Open Opportunities</title>
     <meta name="description" content="Board seats, government commissions, volunteer positions, and leadership development programs across the Eastside.">
-    {jsonld_scripts}
     <style>
         :root {{--primary:#003366;--accent:#0066cc;--accent-light:#e8f0fe;--text:#1a1a1a;--text-muted:#555;--border:#e0e0e0;--bg:#f8f9fa;--white:#fff;--radius:10px;}}
         *{{margin:0;padding:0;box-sizing:border-box;}}
