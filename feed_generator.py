@@ -38,6 +38,7 @@ COL_IDS = [
     "text_mm1xjj2d",       # Skills/Expertise Sought
     "text_mm1xax9d",       # Contact Name
     "email_mm1xw4yg",      # Contact Email
+    "link_mm1xnf68",       # Source URL
 ]
 
 CAT_COLORS = {
@@ -170,6 +171,11 @@ def get_approved_items():
                             parsed[cv["id"] + "_url"] = val["url"]
                     except (json.JSONDecodeError, TypeError):
                         pass
+            # Skip items whose deadline has already passed
+            deadline = parsed.get("date_mm1xzjpp", "")
+            if deadline and deadline < date.today().isoformat():
+                continue
+
             approved.append(parsed)
     return approved
 
@@ -197,6 +203,7 @@ def build_jsonld(item, page_url):
     org_name    = item.get("text_mm1xtwvz", "")
     location    = item.get("text_mm1xrs09", "")
     apply_url   = item.get("link_mm1xm97c_url", "")
+    source_url  = item.get("link_mm1xnf68_url", "")
     deadline    = item.get("date_mm1xzjpp", "")
     date_found  = item.get("date_mm1xb7me", "")
     category    = item.get("color_mm1xqs13", "")
@@ -223,6 +230,7 @@ def build_jsonld(item, page_url):
         "datePosted": date_posted,
         "validThrough": f"{valid_through}T23:59:59",
         "employmentType": emp_type,
+        "occupationalCategory": category or "Volunteer Position",
         "hiringOrganization": {
             "@type": "Organization",
             "name": org_name or "Eastside Leadership Initiative",
@@ -241,8 +249,8 @@ def build_jsonld(item, page_url):
             "name": "ELI Monday ID",
             "value": f"eli-{item.get('id', '')}",
         },
-        "url": page_url,
-        "directApply": False,
+        "url": apply_url or source_url or page_url,
+        "directApply": bool(apply_url),
     }
     return jsonld
 
@@ -262,7 +270,7 @@ def generate_job_page(item, slug):
     org          = item.get("text_mm1xtwvz", "")
     location     = item.get("text_mm1xrs09", "")
     description  = item.get("long_text_mm1xk79e", "")
-    apply_url    = item.get("link_mm1xm97c_url", "")
+    apply_url    = item.get("link_mm1xm97c_url", "") or item.get("link_mm1xnf68_url", "")
     deadline     = item.get("date_mm1xzjpp", "")
     category     = item.get("color_mm1xqs13", "")
     time_commit  = item.get("text_mm1xk54r", "")
@@ -369,7 +377,7 @@ def generate_html(items):
         org          = item.get("text_mm1xtwvz", "")
         location     = item.get("text_mm1xrs09", "")
         description  = item.get("long_text_mm1xk79e", "")
-        apply_url    = item.get("link_mm1xm97c_url", "")
+        apply_url    = item.get("link_mm1xm97c_url", "") or item.get("link_mm1xnf68_url", "")
         deadline     = item.get("date_mm1xzjpp", "")
         category     = item.get("color_mm1xqs13", "")
         time_commit  = item.get("text_mm1xk54r", "")
