@@ -4,9 +4,10 @@
 Queries Monday.com for approved opportunities, writes index.html (listing page)
 and individual jobs/{slug}.html pages (one per opportunity).
 
-JBoard's web scraper follows links from the listing page to individual job pages
-and reads the single JobPosting JSON-LD block on each detail page. Having
-individual pages is required for JBoard to detect and import jobs.
+JBoard's web scraper reads JobPosting JSON-LD directly from the listing page URL
+it is given -- it does NOT follow links. The listing page must contain a JSON-LD
+block for every job. Individual pages are kept for Google for Jobs indexing and
+as landing pages for shared links.
 
 Requires: MONDAY_API_TOKEN environment variable
 Run from: eli-feed repo root
@@ -242,13 +243,8 @@ def build_jsonld(item, page_url):
             "value": f"eli-{item.get('id', '')}",
         },
         "url": page_url,
-        "directApply": bool(apply_url),
+        "directApply": False,
     }
-    if apply_url:
-        jsonld["applicationContact"] = {
-            "@type": "ContactPoint",
-            "url": apply_url,
-        }
     return jsonld
 
 
@@ -362,8 +358,9 @@ def generate_job_page(item, slug):
 def generate_html(items):
     """Return full HTML for the index listing page.
 
-    Title links now point to individual jobs/{slug}.html pages so JBoard's
-    scraper can follow them and read the per-page JSON-LD.
+    Each card includes a JobPosting JSON-LD block so JBoard's scraper (which
+    reads structured data directly from the listing page) can detect every job.
+    Title links also point to individual jobs/{slug}.html pages for SEO.
     """
     cards_html = ""
 
@@ -413,7 +410,11 @@ def generate_html(items):
                 cs += f' (<a href="mailto:{contact_email}">{contact_email}</a>)'
             details += f'<p class="detail"><strong>Contact:</strong> {cs}</p>'
 
-        # Link the title to the individual job page (required for JBoard scraper)
+        # JSON-LD embedded in each card so JBoard reads it from the listing page
+        page_url = f"{BASE_URL}/jobs/{slug}.html"
+        jsonld = build_jsonld(item, page_url)
+        jsonld_block = f'<script type="application/ld+json">{json.dumps(jsonld, indent=2)}</script>'
+
         cards_html += f"""
         <article class="opp-card" id="{slug}">
             <div class="card-header">
@@ -425,6 +426,7 @@ def generate_html(items):
             <p class="desc">{desc_preview}</p>
             {details}
             <div class="card-footer">{apply_btn}</div>
+            {jsonld_block}
         </article>
         """
 
