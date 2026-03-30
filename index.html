@@ -5,7 +5,178 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Eastside Leadership Initiative - Open Opportunities</title>
     <meta name="description" content="Board seats, government commissions, volunteer positions, and leadership development programs across the Eastside.">
-    <script type="application/ld+json">{
+    <style>
+        :root {
+            --primary: #003366;
+            --accent: #0066cc;
+            --accent-light: #e8f0fe;
+            --text: #1a1a1a;
+            --text-muted: #555;
+            --border: #e0e0e0;
+            --bg: #f8f9fa;
+            --white: #fff;
+            --radius: 10px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+        }
+        header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem 1.5rem;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+        header p {
+            opacity: 0.85;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .subheader {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: 0.75rem 1.5rem;
+            text-align: center;
+            font-size: 0.875rem;
+            color: var(--text-muted);
+        }
+        .container {
+            max-width: 860px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        .opp-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow 0.15s;
+        }
+        .opp-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .category-badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+        .org {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+        .opp-card h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .opp-card h2 a {
+            color: var(--text);
+            text-decoration: none;
+        }
+        .opp-card h2 a:hover { color: var(--accent); }
+        .pills {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+        .pill {
+            font-size: 0.75rem;
+            padding: 0.2rem 0.5rem;
+            background: #f0f0f0;
+            border-radius: 4px;
+            color: var(--text-muted);
+        }
+        .pill.deadline { background: #fff3cd; color: #856404; }
+        .desc {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+        .detail {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+        }
+        .detail a { color: var(--accent); }
+        .card-footer {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.75rem;
+        }
+        .apply-btn {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: background 0.15s;
+        }
+        .apply-btn:hover { background: #0052a3; }
+        footer {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+            margin-top: 2rem;
+        }
+        footer a { color: var(--accent); text-decoration: none; }
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+        }
+        @media (max-width: 600px) {
+            header h1 { font-size: 1.35rem; }
+            .opp-card { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Eastside Leadership Initiative</h1>
+        <p>Connecting Eastside leaders with service, training, and professional development</p>
+    </header>
+    <div class="subheader">
+        17 open opportunities &middot; Updated 2026-03-30 &middot;
+        <a href="https://eli.bellevuechamber.org" target="_blank">View full board at eli.bellevuechamber.org</a>
+    </div>
+    <div class="container">
+        
+        <article class="opp-card" id="community-advisory-committee-for-law-enforcement-oversight">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#community-advisory-committee-for-law-enforcement-oversight">Community Advisory Committee for Law Enforcement Oversight</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">3-year terms</span></div>
+            <p class="desc">The Community Advisory Committee for Law Enforcement (CACLEO) offers input on law enforcement policies and procedures. It advises the King County Sheriff's Office and King County Council on equity and social justice in policing. It also provides...</p>
+            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
+            <div class="card-footer"><a href="https://kingcounty.gov/en/independents/governance-and-leadership/government-oversight/office-of-law-enforcement-oversight/cacleo" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Community Advisory Committee for Law Enforcement Oversight",
@@ -34,7 +205,19 @@
   "url": "https://kingcounty.gov/en/independents/governance-and-leadership/government-oversight/office-of-law-enforcement-oversight/cacleo",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="washington-state-boundary-review-board">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#washington-state-boundary-review-board">Washington State Boundary Review Board</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span></div>
+            <p class="desc">The Washington State Boundary Review Board for King Countyis now recruiting candidates to serve on the Board. The Board is particularly seeking persons with interests and/or expertise in areas such as local government, growth management, land use...</p>
+            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
+            <div class="card-footer"><a href="https://kingcounty.gov/en/independents/governance-and-leadership/government-oversight/boundary-review-board" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Washington State Boundary Review Board",
@@ -63,7 +246,19 @@
   "url": "https://kingcounty.gov/en/independents/governance-and-leadership/government-oversight/boundary-review-board",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="health-through-housing-advisory-committee">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#health-through-housing-advisory-committee">Health Through Housing Advisory Committee</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span></div>
+            <p class="desc">The HTH team welcomes nominations of trusted community members who are passionate about expanding access to equitable and affordable housing in our region and who hold any of the following identities and/or experiences:  Represent geographic regions...</p>
+            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
+            <div class="card-footer"></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Health Through Housing Advisory Committee",
@@ -90,7 +285,19 @@
     "value": "eli-11620397750"
   }
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="board-for-developmental-disabilities">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#board-for-developmental-disabilities">Board for Developmental Disabilities</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">meets on the second Monday of each month</span></div>
+            <p class="desc">King County Department of Community and Human Services is recruiting individuals interested in seeking an appointment to the King County Board for Developmental Disabilities. The Board will: share about community resources and events; hold meetings...</p>
+            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p><p class="detail"><strong>Contact:</strong> Jim Ott (<a href="mailto:eknowlen@kingcounty.gov">eknowlen@kingcounty.gov</a>)</p>
+            <div class="card-footer"><a href="https://kingcounty.gov/en/dept/dchs/human-social-services/developmental-disabilities/boards-data-advisory-groups-forum/board" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Board for Developmental Disabilities",
@@ -119,7 +326,19 @@
   "url": "https://kingcounty.gov/en/dept/dchs/human-social-services/developmental-disabilities/boards-data-advisory-groups-forum/board",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="king-county-international-airport-roundtable">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#king-county-international-airport-roundtable">King County International Airport Roundtable</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">meets on the second Monday of each month</span></div>
+            <p class="desc">The King County International Airport Roundtable is current recruiting to fill the following positions:  as a representative from communities directly affected by the airport – South Park  The Roundtable is an advisory board that makes...</p>
+            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
+            <div class="card-footer"></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "King County International Airport Roundtable",
@@ -146,7 +365,19 @@
     "value": "eli-11620414909"
   }
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="seattle-ferry-advisory-committee">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#seattle-ferry-advisory-committee">Seattle Ferry Advisory Committee</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span></div>
+            <p class="desc">The Ferry Advisory Committee reports to the Washington State Department of Transportation (DOT) and reports on problems experienced within the area served by the Washington State Ferries, particularly when the DOT is conducting a review of the...</p>
+            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
+            <div class="card-footer"></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Seattle Ferry Advisory Committee",
@@ -173,7 +404,19 @@
     "value": "eli-11620419309"
   }
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="waterworks-grant-ranking-committee">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#waterworks-grant-ranking-committee">WaterWorks Grant Ranking Committee</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">3-year terms</span></div>
+            <p class="desc">The WaterWorks Grant Ranking Committee is responsible for reviewing, ranking, and making recommendations for funding through the WaterWorks competitive grant program. WaterWorks funds projects that improve water quality in the King CountyWastewater...</p>
+            <p class="detail"><strong>Residency:</strong> King County resident</p>
+            <div class="card-footer"><a href="https://cdn.kingcounty.gov/-/media/king-county/depts/executive/boards-commissions/bc-application/bc-application.pdf?rev=baafd56c0afa42a58a7837925d803475&hash=C9DF37A95B0C97418529C2FE3D3B7778" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "WaterWorks Grant Ranking Committee",
@@ -202,7 +445,19 @@
   "url": "https://cdn.kingcounty.gov/-/media/king-county/depts/executive/boards-commissions/bc-application/bc-application.pdf?rev=baafd56c0afa42a58a7837925d803475&hash=C9DF37A95B0C97418529C2FE3D3B7778",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="womens-advisory-board">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">King County</span>
+            </div>
+            <h2><a href="#womens-advisory-board">Women's Advisory Board</a></h2>
+            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">3-year terms</span></div>
+            <p class="desc">The WAB has 9 Council-nominated representatives, 4 Council at-large representatives (nominated by the Council Chair from nominations received from the King County Councilmembers) and 2 Executive at-large positions (nominated and appointed by the...</p>
+            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
+            <div class="card-footer"><a href="https://kingcounty.gov/en/legacy/council/councilmembers/find_district.aspx" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Women's Advisory Board",
@@ -231,7 +486,19 @@
   "url": "https://kingcounty.gov/en/legacy/council/councilmembers/find_district.aspx",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="sammamish-commission-openings-available">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">City of Sammamish</span>
+            </div>
+            <h2><a href="#sammamish-commission-openings-available">Sammamish Commission Openings Available</a></h2>
+            <div class="pills"><span class="pill loc">Sammamish, WA</span></div>
+            <p class="desc">The City of Sammamish has openings on one or more commissions. Visit the CivicWeb portal to see current positions and apply.</p>
+            <p class="detail"><strong>Residency:</strong> Must be a Sammamish resident</p>
+            <div class="card-footer"><a href="https://sammamishwa.civicweb.net/Portal/BoardApplication/" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Sammamish Commission Openings Available",
@@ -260,7 +527,19 @@
   "url": "https://sammamishwa.civicweb.net/Portal/BoardApplication/",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="planning-commission-open-position">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">City of Newcastle</span>
+            </div>
+            <h2><a href="#planning-commission-open-position">Planning Commission - Open Position</a></h2>
+            <div class="pills"><span class="pill loc">Newcastle, WA</span></div>
+            <p class="desc">The City of Newcastle has an opening on the Planning Commission.</p>
+            <p class="detail"><strong>Residency:</strong> Must be a Newcastle resident</p>
+            <div class="card-footer"><a href="http://www.newcastlewa.gov/city_hall/commissions" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Planning Commission - Open Position",
@@ -289,7 +568,19 @@
   "url": "http://www.newcastlewa.gov/city_hall/commissions",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="leadership-eastside-core-experience">
+            <div class="card-header">
+                <span class="category-badge" style="color:#7c3aed;background:#ede9fe">Leadership Development</span>
+                <span class="org">Leadership Eastside</span>
+            </div>
+            <h2><a href="#leadership-eastside-core-experience">Leadership Eastside CORE Experience</a></h2>
+            <div class="pills"><span class="pill loc">Bellevue, WA (East King County)</span><span class="pill time">10-month program, monthly sessions</span></div>
+            <p class="desc">10-month leadership development program for Eastside professionals. Focuses on Adaptive Leadership, Racial Equity, Systems Thinking, and Emotional Intelligence. 40-person annual cohort with 20+ years of building leadership capacity in East King...</p>
+            
+            <div class="card-footer"><a href="https://www.leadershipeastside.com/core-experience" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Leadership Eastside CORE Experience",
@@ -318,7 +609,19 @@
   "url": "https://www.leadershipeastside.com/core-experience",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="leadership-tomorrow-project-lead">
+            <div class="card-header">
+                <span class="category-badge" style="color:#7c3aed;background:#ede9fe">Leadership Development</span>
+                <span class="org">Leadership Tomorrow</span>
+            </div>
+            <h2><a href="#leadership-tomorrow-project-lead">Leadership Tomorrow - Project LEAD</a></h2>
+            <div class="pills"><span class="pill loc">Seattle / Puget Sound Region, WA</span><span class="pill time">7 sessions over 4-5 weeks (March-April annually)</span></div>
+            <p class="desc">BIPOC board leadership training program. 7 sessions covering nonprofit landscape, board operations, advocacy, fiscal management with racial equity lens. Cohort of 40-45 leaders. Concludes with Networking Fair connecting graduates to nonprofits...</p>
+            
+            <div class="card-footer"><a href="https://www.leadershiptomorrowseattle.org" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Leadership Tomorrow - Project LEAD",
@@ -347,7 +650,19 @@
   "url": "https://www.leadershiptomorrowseattle.org",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="bellevue-chamber-new-executives-program">
+            <div class="card-header">
+                <span class="category-badge" style="color:#7c3aed;background:#ede9fe">Leadership Development</span>
+                <span class="org">Bellevue Chamber of Commerce</span>
+            </div>
+            <h2><a href="#bellevue-chamber-new-executives-program">Bellevue Chamber New Executives Program</a></h2>
+            <div class="pills"><span class="pill loc">Bellevue, WA</span><span class="pill time">9 sessions</span></div>
+            <p class="desc">9-session leadership development series for rising professionals. Features behind-the-scenes access to key industries and decision-making spaces, including sessions with elected officials and business leaders. Builds essential leadership skills,...</p>
+            
+            <div class="card-footer"><a href="https://www.bellevuechamber.org/newexecutives" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Bellevue Chamber New Executives Program",
@@ -376,7 +691,19 @@
   "url": "https://www.bellevuechamber.org/newexecutives",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="arts-council-3-open-positions">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">City of Mercer Island</span>
+            </div>
+            <h2><a href="#arts-council-3-open-positions">Arts Council - 3 Open Positions</a></h2>
+            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2027, 2 positions terms expire May 31, 2030</span></div>
+            <p class="desc">The City of Mercer Island is seeking 3 volunteers to serve on the Arts Council. Term expires May 31, 2027, 2 positions terms expire May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
+            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
+            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Arts Council - 3 Open Positions",
@@ -405,7 +732,19 @@
   "url": "http://www.mercerisland.gov/bc",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="open-space-conservancy-trust-2-open-positions">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">City of Mercer Island</span>
+            </div>
+            <h2><a href="#open-space-conservancy-trust-2-open-positions">Open Space Conservancy Trust - 2 Open Positions</a></h2>
+            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2030</span></div>
+            <p class="desc">The City of Mercer Island is seeking 2 volunteers to serve on the Open Space Conservancy Trust. Term expires May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
+            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
+            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Open Space Conservancy Trust - 2 Open Positions",
@@ -434,7 +773,19 @@
   "url": "http://www.mercerisland.gov/bc",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="parks-recreation-commission-2-open-positions">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">City of Mercer Island</span>
+            </div>
+            <h2><a href="#parks-recreation-commission-2-open-positions">Parks & Recreation Commission - 2 Open Positions</a></h2>
+            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2030</span></div>
+            <p class="desc">The City of Mercer Island is seeking 2 volunteers to serve on the Parks & Recreation Commission. Term expires May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
+            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
+            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Parks & Recreation Commission - 2 Open Positions",
@@ -463,7 +814,19 @@
   "url": "http://www.mercerisland.gov/bc",
   "directApply": true
 }</script>
-<script type="application/ld+json">{
+        </article>
+        
+        <article class="opp-card" id="utility-board-2-open-positions">
+            <div class="card-header">
+                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
+                <span class="org">City of Mercer Island</span>
+            </div>
+            <h2><a href="#utility-board-2-open-positions">Utility Board - 2 Open Positions</a></h2>
+            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2030</span></div>
+            <p class="desc">The City of Mercer Island is seeking 2 volunteers to serve on the Utility Board. Term expires May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
+            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
+            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
+            <script type="application/ld+json">{
   "@context": "https://schema.org/",
   "@type": "JobPosting",
   "title": "Utility Board - 2 Open Positions",
@@ -492,252 +855,6 @@
   "url": "http://www.mercerisland.gov/bc",
   "directApply": true
 }</script>
-
-    <style>
-        :root {--primary:#003366;--accent:#0066cc;--accent-light:#e8f0fe;--text:#1a1a1a;--text-muted:#555;--border:#e0e0e0;--bg:#f8f9fa;--white:#fff;--radius:10px;}
-        *{margin:0;padding:0;box-sizing:border-box;}
-        body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;}
-        header{background:var(--primary);color:white;padding:2rem 1.5rem;text-align:center;}
-        header h1{font-size:1.75rem;font-weight:700;margin-bottom:.25rem;}
-        header p{opacity:.85;font-size:1rem;max-width:600px;margin:0 auto;}
-        .subheader{background:var(--white);border-bottom:1px solid var(--border);padding:.75rem 1.5rem;text-align:center;font-size:.875rem;color:var(--text-muted);}
-        .container{max-width:860px;margin:1.5rem auto;padding:0 1rem;}
-        .opp-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.5rem;margin-bottom:1rem;transition:box-shadow .15s;}
-        .opp-card:hover{box-shadow:0 2px 12px rgba(0,0,0,.08);}
-        .card-header{display:flex;align-items:center;gap:.75rem;margin-bottom:.5rem;flex-wrap:wrap;}
-        .category-badge{font-size:.75rem;font-weight:600;padding:.2rem .6rem;border-radius:99px;text-transform:uppercase;letter-spacing:.03em;}
-        .org{font-size:.85rem;color:var(--text-muted);font-weight:500;}
-        .opp-card h2{font-size:1.15rem;font-weight:600;margin-bottom:.5rem;}
-        .opp-card h2 a{color:var(--text);text-decoration:none;}
-        .opp-card h2 a:hover{color:var(--accent);}
-        .pills{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;}
-        .pill{font-size:.75rem;padding:.2rem .5rem;background:#f0f0f0;border-radius:4px;color:var(--text-muted);}
-        .pill.deadline{background:#fff3cd;color:#856404;}
-        .desc{font-size:.9rem;color:var(--text-muted);margin-bottom:.75rem;}
-        .detail{font-size:.85rem;color:var(--text-muted);margin-bottom:.25rem;}
-        .detail a{color:var(--accent);}
-        .card-footer{margin-top:1rem;display:flex;gap:.75rem;}
-        .apply-btn{display:inline-block;background:var(--accent);color:white;padding:.5rem 1.25rem;border-radius:6px;text-decoration:none;font-size:.875rem;font-weight:600;transition:background .15s;}
-        .apply-btn:hover{background:#0052a3;}
-        footer{text-align:center;padding:2rem 1rem;color:var(--text-muted);font-size:.8rem;border-top:1px solid var(--border);margin-top:2rem;}
-        footer a{color:var(--accent);text-decoration:none;}
-        .empty-state{text-align:center;padding:3rem 1rem;color:var(--text-muted);}
-        @media(max-width:600px){header h1{font-size:1.35rem;}.opp-card{padding:1rem;}}
-    </style>
-</head>
-<body>
-    <header>
-        <h1>Eastside Leadership Initiative</h1>
-        <p>Connecting Eastside leaders with service, training, and professional development</p>
-    </header>
-    <div class="subheader">
-        17 open opportunities &middot; Updated 2026-03-30 &middot;
-        <a href="https://eli.bellevuechamber.org" target="_blank">View full board at eli.bellevuechamber.org</a>
-    </div>
-    <div class="container">
-        
-        <article class="opp-card" id="community-advisory-committee-for-law-enforcement-oversight">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#community-advisory-committee-for-law-enforcement-oversight">Community Advisory Committee for Law Enforcement Oversight</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">3-year terms</span></div>
-            <p class="desc">The Community Advisory Committee for Law Enforcement (CACLEO) offers input on law enforcement policies and procedures. It advises the King County Sheriff's Office and King County Council on equity and social justice in policing. It also provides...</p>
-            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
-            <div class="card-footer"><a href="https://kingcounty.gov/en/independents/governance-and-leadership/government-oversight/office-of-law-enforcement-oversight/cacleo" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="washington-state-boundary-review-board">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#washington-state-boundary-review-board">Washington State Boundary Review Board</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span></div>
-            <p class="desc">The Washington State Boundary Review Board for King Countyis now recruiting candidates to serve on the Board. The Board is particularly seeking persons with interests and/or expertise in areas such as local government, growth management, land use...</p>
-            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
-            <div class="card-footer"><a href="https://kingcounty.gov/en/independents/governance-and-leadership/government-oversight/boundary-review-board" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="health-through-housing-advisory-committee">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#health-through-housing-advisory-committee">Health Through Housing Advisory Committee</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span></div>
-            <p class="desc">The HTH team welcomes nominations of trusted community members who are passionate about expanding access to equitable and affordable housing in our region and who hold any of the following identities and/or experiences:  Represent geographic regions...</p>
-            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
-            <div class="card-footer"></div>
-        </article>
-        
-        <article class="opp-card" id="board-for-developmental-disabilities">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#board-for-developmental-disabilities">Board for Developmental Disabilities</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">meets on the second Monday of each month</span></div>
-            <p class="desc">King County Department of Community and Human Services is recruiting individuals interested in seeking an appointment to the King County Board for Developmental Disabilities. The Board will: share about community resources and events; hold meetings...</p>
-            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p><p class="detail"><strong>Contact:</strong> Jim Ott (<a href="mailto:eknowlen@kingcounty.gov">eknowlen@kingcounty.gov</a>)</p>
-            <div class="card-footer"><a href="https://kingcounty.gov/en/dept/dchs/human-social-services/developmental-disabilities/boards-data-advisory-groups-forum/board" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="king-county-international-airport-roundtable">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#king-county-international-airport-roundtable">King County International Airport Roundtable</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">meets on the second Monday of each month</span></div>
-            <p class="desc">The King County International Airport Roundtable is current recruiting to fill the following positions:  as a representative from communities directly affected by the airport – South Park  The Roundtable is an advisory board that makes...</p>
-            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
-            <div class="card-footer"></div>
-        </article>
-        
-        <article class="opp-card" id="seattle-ferry-advisory-committee">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#seattle-ferry-advisory-committee">Seattle Ferry Advisory Committee</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span></div>
-            <p class="desc">The Ferry Advisory Committee reports to the Washington State Department of Transportation (DOT) and reports on problems experienced within the area served by the Washington State Ferries, particularly when the DOT is conducting a review of the...</p>
-            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
-            <div class="card-footer"></div>
-        </article>
-        
-        <article class="opp-card" id="waterworks-grant-ranking-committee">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#waterworks-grant-ranking-committee">WaterWorks Grant Ranking Committee</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">3-year terms</span></div>
-            <p class="desc">The WaterWorks Grant Ranking Committee is responsible for reviewing, ranking, and making recommendations for funding through the WaterWorks competitive grant program. WaterWorks funds projects that improve water quality in the King CountyWastewater...</p>
-            <p class="detail"><strong>Residency:</strong> King County resident</p>
-            <div class="card-footer"><a href="https://cdn.kingcounty.gov/-/media/king-county/depts/executive/boards-commissions/bc-application/bc-application.pdf?rev=baafd56c0afa42a58a7837925d803475&hash=C9DF37A95B0C97418529C2FE3D3B7778" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="womens-advisory-board">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">King County</span>
-            </div>
-            <h2><a href="#womens-advisory-board">Women's Advisory Board</a></h2>
-            <div class="pills"><span class="pill loc">King County, WA</span><span class="pill time">3-year terms</span></div>
-            <p class="desc">The WAB has 9 Council-nominated representatives, 4 Council at-large representatives (nominated by the Council Chair from nominations received from the King County Councilmembers) and 2 Executive at-large positions (nominated and appointed by the...</p>
-            <p class="detail"><strong>Residency:</strong> Must be a King County resident</p>
-            <div class="card-footer"><a href="https://kingcounty.gov/en/legacy/council/councilmembers/find_district.aspx" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="sammamish-commission-openings-available">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">City of Sammamish</span>
-            </div>
-            <h2><a href="#sammamish-commission-openings-available">Sammamish Commission Openings Available</a></h2>
-            <div class="pills"><span class="pill loc">Sammamish, WA</span></div>
-            <p class="desc">The City of Sammamish has openings on one or more commissions. Visit the CivicWeb portal to see current positions and apply.</p>
-            <p class="detail"><strong>Residency:</strong> Must be a Sammamish resident</p>
-            <div class="card-footer"><a href="https://sammamishwa.civicweb.net/Portal/BoardApplication/" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="planning-commission-open-position">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">City of Newcastle</span>
-            </div>
-            <h2><a href="#planning-commission-open-position">Planning Commission - Open Position</a></h2>
-            <div class="pills"><span class="pill loc">Newcastle, WA</span></div>
-            <p class="desc">The City of Newcastle has an opening on the Planning Commission.</p>
-            <p class="detail"><strong>Residency:</strong> Must be a Newcastle resident</p>
-            <div class="card-footer"><a href="http://www.newcastlewa.gov/city_hall/commissions" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="leadership-eastside-core-experience">
-            <div class="card-header">
-                <span class="category-badge" style="color:#7c3aed;background:#ede9fe">Leadership Development</span>
-                <span class="org">Leadership Eastside</span>
-            </div>
-            <h2><a href="#leadership-eastside-core-experience">Leadership Eastside CORE Experience</a></h2>
-            <div class="pills"><span class="pill loc">Bellevue, WA (East King County)</span><span class="pill time">10-month program, monthly sessions</span></div>
-            <p class="desc">10-month leadership development program for Eastside professionals. Focuses on Adaptive Leadership, Racial Equity, Systems Thinking, and Emotional Intelligence. 40-person annual cohort with 20+ years of building leadership capacity in East King...</p>
-            
-            <div class="card-footer"><a href="https://www.leadershipeastside.com/core-experience" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="leadership-tomorrow-project-lead">
-            <div class="card-header">
-                <span class="category-badge" style="color:#7c3aed;background:#ede9fe">Leadership Development</span>
-                <span class="org">Leadership Tomorrow</span>
-            </div>
-            <h2><a href="#leadership-tomorrow-project-lead">Leadership Tomorrow - Project LEAD</a></h2>
-            <div class="pills"><span class="pill loc">Seattle / Puget Sound Region, WA</span><span class="pill time">7 sessions over 4-5 weeks (March-April annually)</span></div>
-            <p class="desc">BIPOC board leadership training program. 7 sessions covering nonprofit landscape, board operations, advocacy, fiscal management with racial equity lens. Cohort of 40-45 leaders. Concludes with Networking Fair connecting graduates to nonprofits...</p>
-            
-            <div class="card-footer"><a href="https://www.leadershiptomorrowseattle.org" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="bellevue-chamber-new-executives-program">
-            <div class="card-header">
-                <span class="category-badge" style="color:#7c3aed;background:#ede9fe">Leadership Development</span>
-                <span class="org">Bellevue Chamber of Commerce</span>
-            </div>
-            <h2><a href="#bellevue-chamber-new-executives-program">Bellevue Chamber New Executives Program</a></h2>
-            <div class="pills"><span class="pill loc">Bellevue, WA</span><span class="pill time">9 sessions</span></div>
-            <p class="desc">9-session leadership development series for rising professionals. Features behind-the-scenes access to key industries and decision-making spaces, including sessions with elected officials and business leaders. Builds essential leadership skills,...</p>
-            
-            <div class="card-footer"><a href="https://www.bellevuechamber.org/newexecutives" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="arts-council-3-open-positions">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">City of Mercer Island</span>
-            </div>
-            <h2><a href="#arts-council-3-open-positions">Arts Council - 3 Open Positions</a></h2>
-            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2027, 2 positions terms expire May 31, 2030</span></div>
-            <p class="desc">The City of Mercer Island is seeking 3 volunteers to serve on the Arts Council. Term expires May 31, 2027, 2 positions terms expire May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
-            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
-            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="open-space-conservancy-trust-2-open-positions">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">City of Mercer Island</span>
-            </div>
-            <h2><a href="#open-space-conservancy-trust-2-open-positions">Open Space Conservancy Trust - 2 Open Positions</a></h2>
-            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2030</span></div>
-            <p class="desc">The City of Mercer Island is seeking 2 volunteers to serve on the Open Space Conservancy Trust. Term expires May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
-            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
-            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="parks-recreation-commission-2-open-positions">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">City of Mercer Island</span>
-            </div>
-            <h2><a href="#parks-recreation-commission-2-open-positions">Parks & Recreation Commission - 2 Open Positions</a></h2>
-            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2030</span></div>
-            <p class="desc">The City of Mercer Island is seeking 2 volunteers to serve on the Parks & Recreation Commission. Term expires May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
-            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
-            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
-        </article>
-        
-        <article class="opp-card" id="utility-board-2-open-positions">
-            <div class="card-header">
-                <span class="category-badge" style="color:#0e7c3a;background:#e6f4ea">Government Commission</span>
-                <span class="org">City of Mercer Island</span>
-            </div>
-            <h2><a href="#utility-board-2-open-positions">Utility Board - 2 Open Positions</a></h2>
-            <div class="pills"><span class="pill loc">Mercer Island, WA</span><span class="pill deadline">Deadline: 2026-05-08</span><span class="pill time">Term expires May 31, 2030</span></div>
-            <p class="desc">The City of Mercer Island is seeking 2 volunteers to serve on the Utility Board. Term expires May 31, 2030 Visit mercerisland.gov/bc for full details and application instructions.</p>
-            <p class="detail"><strong>Residency:</strong> Must be a Mercer Island resident</p>
-            <div class="card-footer"><a href="http://www.mercerisland.gov/bc" class="apply-btn" target="_blank" rel="noopener">Apply Now</a></div>
         </article>
         
     </div>
