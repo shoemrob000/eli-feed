@@ -1,0 +1,46 @@
+name: Regenerate ELI Feed
+
+on:
+  # Triggered by Make.com when a Monday item is approved
+  repository_dispatch:
+    types: [regenerate-feed]
+
+  # Daily fallback at 6:30 AM PT (14:30 UTC) — catches any Make.com misses
+  schedule:
+    - cron: "30 14 * * *"
+
+  # Allow manual trigger from GitHub Actions UI
+  workflow_dispatch:
+
+jobs:
+  regenerate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate feed
+        env:
+          MONDAY_API_TOKEN: ${{ secrets.MONDAY_API_TOKEN }}
+        run: python feed_generator.py
+
+      - name: Commit and push updated feed
+        run: |
+          git config user.name "ELI Feed Bot"
+          git config user.email "noreply@bellevuechamber.org"
+          git add index.html
+          git add jobs/ 2>/dev/null || true
+          git add -u jobs/ 2>/dev/null || true
+          git diff --staged --quiet && echo "No changes to commit" || git commit -m "Regenerate ELI feed [bot]"
+          git push

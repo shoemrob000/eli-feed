@@ -1,0 +1,522 @@
+#!/usr/bin/env python3
+"""Standalone ELI JBoard feed generator for GitHub Actions.
+
+Queries Monday.com for approved opportunities, writes index.html (listing page)
+and individual jobs/{slug}.html pages (one per opportunity).
+
+JBoard's web scraper follows links from the listing page to individual job pages
+and reads the single JobPosting JSON-LD block on each detail page. Having
+individual pages is required for JBoard to detect and import jobs.
+
+Requires: MONDAY_API_TOKEN environment variable
+Run from: eli-feed repo root
+"""
+import json
+import os
+import re
+import shutil
+from datetime import date, timedelta
+from pathlib import Path
+
+import requests
+
+MONDAY_API_TOKEN = os.environ["MONDAY_API_TOKEN"]
+MONDAY_BOARD_ID = 18406083209
+BASE_URL = "https://shoemrob000.github.io/eli-feed"
+
+COL_IDS = [
+    "long_text_mm1xk79e",  # Description
+    "text_mm1xtwvz",       # Organization
+    "color_mm1xqs13",      # ELI Category
+    "text_mm1xrs09",       # Location
+    "link_mm1xm97c",       # Application URL
+    "date_mm1xzjpp",       # Application Deadline
+    "color_mm1x83bw",      # Review Status
+    "date_mm1xb7me",       # Date Found
+    "text_mm1xk54r",       # Time Commitment
+    "text_mm1x82h0",       # Residency Requirement
+    "text_mm1xjj2d",       # Skills/Expertise Sought
+    "text_mm1xax9d",       # Contact Name
+    "email_mm1xw4yg",      # Contact Email
+]
+
+CAT_COLORS = {
+    "Government Commission":  ("#0e7c3a", "#e6f4ea"),
+    "Board Position":         ("#1a56db", "#e8f0fe"),
+    "Volunteer Position":     ("#b45309", "#fef3c7"),
+    "Leadership Development": ("#7c3aed", "#ede9fe"),
+}
+
+SHARED_STYLE = """
+    :root {
+        --primary: #003366;
+        --accent: #0066cc;
+        --text: #1a1a1a;
+        --text-muted: #555;
+        --border: #e0e0e0;
+        --bg: #f8f9fa;
+        --white: #fff;
+        --radius: 10px;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+                     'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+    }
+    header {
+        background: var(--primary);
+        color: white;
+        padding: 2rem 1.5rem;
+        text-align: center;
+    }
+    header h1 { font-size: 1.75rem; font-weight: 700; margin-bottom: .25rem; }
+    header p  { opacity: .85; font-size: 1rem; max-width: 600px; margin: 0 auto; }
+    .container { max-width: 860px; margin: 1.5rem auto; padding: 0 1rem; }
+    .category-badge {
+        font-size: .75rem; font-weight: 600;
+        padding: .2rem .6rem; border-radius: 99px;
+        text-transform: uppercase; letter-spacing: .03em;
+        display: inline-block; margin-bottom: .5rem;
+    }
+    .org { font-size: .85rem; color: var(--text-muted); font-weight: 500; }
+    .pills { display: flex; gap: .5rem; flex-wrap: wrap; margin-bottom: .75rem; }
+    .pill {
+        font-size: .75rem; padding: .2rem .5rem;
+        background: #f0f0f0; border-radius: 4px; color: var(--text-muted);
+    }
+    .pill.deadline { background: #fff3cd; color: #856404; }
+    .detail { font-size: .85rem; color: var(--text-muted); margin-bottom: .25rem; }
+    .detail a { color: var(--accent); }
+    .apply-btn {
+        display: inline-block; background: var(--accent); color: white;
+        padding: .5rem 1.25rem; border-radius: 6px; text-decoration: none;
+        font-size: .875rem; font-weight: 600; transition: background .15s;
+    }
+    .apply-btn:hover { background: #0052a3; }
+    footer {
+        text-align: center; padding: 2rem 1rem;
+        color: var(--text-muted); font-size: .8rem;
+        border-top: 1px solid var(--border); margin-top: 2rem;
+    }
+    footer a { color: var(--accent); text-decoration: none; }
+    @media (max-width: 600px) {
+        header h1 { font-size: 1.35rem; }
+    }
+"""
+
+
+# ---------------------------------------------------------------------------
+# Monday.com helpers
+# ---------------------------------------------------------------------------
+
+def _monday_query(query_str, variables=None):
+    headers = {
+        "Authorization": MONDAY_API_TOKEN,
+        "Content-Type": "application/json",
+    }
+    payload = {"query": query_str}
+    if variables:
+        payload["variables"] = variables
+    resp = requests.post(
+        "https://api.monday.com/v2", json=payload, headers=headers, timeout=30
+    )
+    resp.raise_for_status()
+    data = resp.json()
+    if "errors" in data:
+        raise RuntimeError(f"Monday API error: {data['errors']}")
+    return data["data"]
+
+
+def get_approved_items():
+    col_ids_str = '", "'.join(COL_IDS)
+    query_str = """
+        query ($boardId: [ID!]!) {
+            boards(ids: $boardId) {
+                items_page(limit: 500) {
+                    items {
+                        id
+                        name
+                        group { id title }
+                        column_values(ids: ["%s"]) {
+                            id text value
+                        }
+                    }
+                }
+            }
+        }
+    """ % col_ids_str
+
+    data = _monday_query(query_str, {"boardId": [str(MONDAY_BOARD_ID)]})
+    all_items = data["boards"][0]["items_page"]["items"]
+
+    approved = []
+    for item in all_items:
+        group_title = item.get("group", {}).get("title", "")
+        review_status = ""
+        for cv in item["column_values"]:
+            if cv["id"] == "color_mm1x83bw":
+                review_status = cv.get("text", "")
+        if "approved" in group_title.lower() or "approved" in review_status.lower():
+            parsed = {"id": item["id"], "name": item["name"]}
+            for cv in item["column_values"]:
+                parsed[cv["id"]] = cv.get("text", "") or ""
+                if cv.get("value") and cv["id"].startswith("link_"):
+                    try:
+                        val = json.loads(cv["value"])
+                        if isinstance(val, dict) and val.get("url"):
+                            parsed[cv["id"] + "_url"] = val["url"]
+                    except (json.JSONDecodeError, TypeError):
+                        pass
+            approved.append(parsed)
+    return approved
+
+
+# ---------------------------------------------------------------------------
+# Slug + JSON-LD helpers
+# ---------------------------------------------------------------------------
+
+def make_slug(title):
+    slug = title.lower().strip()
+    slug = re.sub(r"[^\w\s-]", "", slug)
+    slug = re.sub(r"[\s_]+", "-", slug)
+    slug = re.sub(r"-+", "-", slug)
+    return slug[:80]
+
+
+def build_jsonld(item, page_url):
+    """Build a JobPosting JSON-LD dict for one opportunity.
+
+    page_url should be the canonical URL of the individual job detail page so
+    JBoard (and Google) resolve the listing to a stable URL on this domain.
+    """
+    title       = item.get("name", "Untitled Opportunity")
+    description = item.get("long_text_mm1xk79e", "")
+    org_name    = item.get("text_mm1xtwvz", "")
+    location    = item.get("text_mm1xrs09", "")
+    apply_url   = item.get("link_mm1xm97c_url", "")
+    deadline    = item.get("date_mm1xzjpp", "")
+    date_found  = item.get("date_mm1xb7me", "")
+    category    = item.get("color_mm1xqs13", "")
+
+    emp_type = "OTHER" if "leadership" in category.lower() else "VOLUNTEER"
+
+    city = location.split(",")[0].strip() if location else ""
+
+    valid_through = deadline
+    if not valid_through:
+        try:
+            posted = date.fromisoformat(date_found) if date_found else date.today()
+            valid_through = (posted + timedelta(days=90)).isoformat()
+        except ValueError:
+            valid_through = (date.today() + timedelta(days=90)).isoformat()
+
+    date_posted = date_found or date.today().isoformat()
+
+    jsonld = {
+        "@context": "https://schema.org/",
+        "@type": "JobPosting",
+        "title": title,
+        "description": description or f"Community leadership opportunity: {title}",
+        "datePosted": date_posted,
+        "validThrough": f"{valid_through}T23:59:59",
+        "employmentType": emp_type,
+        "hiringOrganization": {
+            "@type": "Organization",
+            "name": org_name or "Eastside Leadership Initiative",
+        },
+        "jobLocation": {
+            "@type": "Place",
+            "address": {
+                "@type": "PostalAddress",
+                "addressLocality": city,
+                "addressRegion": "WA",
+                "addressCountry": "US",
+            },
+        },
+        "identifier": {
+            "@type": "PropertyValue",
+            "name": "ELI Monday ID",
+            "value": f"eli-{item.get('id', '')}",
+        },
+        "url": page_url,
+        "directApply": bool(apply_url),
+    }
+    if apply_url:
+        jsonld["applicationContact"] = {
+            "@type": "ContactPoint",
+            "url": apply_url,
+        }
+    return jsonld
+
+
+# ---------------------------------------------------------------------------
+# Individual job detail page generator
+# ---------------------------------------------------------------------------
+
+def generate_job_page(item, slug):
+    """Return full HTML for a single job detail page at jobs/{slug}.html.
+
+    This is what JBoard's scraper visits after following the link from the
+    listing page. It contains one JobPosting JSON-LD block inside <body>.
+    """
+    title        = item.get("name", "Untitled Opportunity")
+    org          = item.get("text_mm1xtwvz", "")
+    location     = item.get("text_mm1xrs09", "")
+    description  = item.get("long_text_mm1xk79e", "")
+    apply_url    = item.get("link_mm1xm97c_url", "")
+    deadline     = item.get("date_mm1xzjpp", "")
+    category     = item.get("color_mm1xqs13", "")
+    time_commit  = item.get("text_mm1xk54r", "")
+    residency    = item.get("text_mm1x82h0", "")
+    skills       = item.get("text_mm1xjj2d", "")
+    contact      = item.get("text_mm1xax9d", "")
+    contact_email = item.get("email_mm1xw4yg", "")
+
+    badge_fg, badge_bg = CAT_COLORS.get(category, ("#555", "#f0f0f0"))
+    page_url = f"{BASE_URL}/jobs/{slug}.html"
+    jsonld_block = json.dumps(build_jsonld(item, page_url), indent=2)
+
+    desc_meta = re.sub(r"\s+", " ", description[:160]).strip()
+
+    pills = ""
+    if location:
+        pills += f'<span class="pill loc">{location}</span>'
+    if deadline:
+        pills += f'<span class="pill deadline">Deadline: {deadline}</span>'
+    if time_commit:
+        pills += f'<span class="pill time">{time_commit}</span>'
+
+    details = ""
+    if residency:
+        details += f'<p class="detail"><strong>Residency:</strong> {residency}</p>'
+    if skills:
+        details += f'<p class="detail"><strong>Looking for:</strong> {skills}</p>'
+    if contact:
+        cs = contact
+        if contact_email:
+            cs += f' (<a href="mailto:{contact_email}">{contact_email}</a>)'
+        details += f'<p class="detail"><strong>Contact:</strong> {cs}</p>'
+
+    apply_btn = (
+        f'<a href="{apply_url}" class="apply-btn" target="_blank" rel="noopener">'
+        f'Apply Now</a>'
+        if apply_url else ""
+    )
+
+    # Preserve line breaks in description for readability
+    desc_html = description.replace("\n", "<br>") if description else \
+        f"Community leadership opportunity: {title}"
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{title} - Eastside Leadership Initiative</title>
+    <meta name="description" content="{desc_meta}">
+    <style>{SHARED_STYLE}
+        .job-detail {{ background: var(--white); border: 1px solid var(--border);
+            border-radius: var(--radius); padding: 2rem; margin-bottom: 1rem; }}
+        .job-detail h1 {{ font-size: 1.5rem; font-weight: 700; margin-bottom: .5rem; }}
+        .description {{ font-size: .95rem; color: var(--text-muted); margin: 1rem 0 1.25rem; }}
+        .back-link {{ font-size: .875rem; color: var(--accent); text-decoration: none; }}
+        .back-link:hover {{ text-decoration: underline; }}
+        .card-footer {{ margin-top: 1.5rem; }}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Eastside Leadership Initiative</h1>
+        <p>Connecting Eastside leaders with service, training, and professional development</p>
+    </header>
+    <div class="container">
+        <p style="margin-bottom:1rem;">
+            <a class="back-link" href="../">&larr; Back to all opportunities</a>
+        </p>
+        <article class="job-detail" id="{slug}">
+            <span class="category-badge" style="color:{badge_fg};background:{badge_bg}">{category}</span>
+            <p class="org">{org}</p>
+            <h1>{title}</h1>
+            <div class="pills">{pills}</div>
+            <div class="description">{desc_html}</div>
+            {details}
+            <div class="card-footer">{apply_btn}</div>
+            <script type="application/ld+json">{jsonld_block}</script>
+        </article>
+    </div>
+    <footer>
+        <p>Powered by the <a href="https://www.bellevuechamber.org/eli/">Bellevue Chamber of Commerce</a> Eastside Leadership Initiative</p>
+        <p>Visit <a href="https://eli.bellevuechamber.org">eli.bellevuechamber.org</a> for the full searchable board.</p>
+    </footer>
+</body>
+</html>"""
+
+
+# ---------------------------------------------------------------------------
+# Index / listing page generator
+# ---------------------------------------------------------------------------
+
+def generate_html(items):
+    """Return full HTML for the index listing page.
+
+    Title links now point to individual jobs/{slug}.html pages so JBoard's
+    scraper can follow them and read the per-page JSON-LD.
+    """
+    cards_html = ""
+
+    for item in items:
+        title        = item.get("name", "")
+        org          = item.get("text_mm1xtwvz", "")
+        location     = item.get("text_mm1xrs09", "")
+        description  = item.get("long_text_mm1xk79e", "")
+        apply_url    = item.get("link_mm1xm97c_url", "")
+        deadline     = item.get("date_mm1xzjpp", "")
+        category     = item.get("color_mm1xqs13", "")
+        time_commit  = item.get("text_mm1xk54r", "")
+        residency    = item.get("text_mm1x82h0", "")
+        skills       = item.get("text_mm1xjj2d", "")
+        contact      = item.get("text_mm1xax9d", "")
+        contact_email = item.get("email_mm1xw4yg", "")
+        slug = make_slug(title)
+
+        badge_fg, badge_bg = CAT_COLORS.get(category, ("#555", "#f0f0f0"))
+
+        desc_preview = (description[:250].rsplit(" ", 1)[0] + "...") \
+            if len(description) > 250 else description
+        desc_preview = desc_preview.replace("\n", " ").replace("\r", " ")
+
+        pills = ""
+        if location:
+            pills += f'<span class="pill loc">{location}</span>'
+        if deadline:
+            pills += f'<span class="pill deadline">Deadline: {deadline}</span>'
+        if time_commit:
+            pills += f'<span class="pill time">{time_commit}</span>'
+
+        apply_btn = (
+            f'<a href="{apply_url}" class="apply-btn" target="_blank" rel="noopener">'
+            f'Apply Now</a>'
+            if apply_url else ""
+        )
+
+        details = ""
+        if residency:
+            details += f'<p class="detail"><strong>Residency:</strong> {residency}</p>'
+        if skills:
+            details += f'<p class="detail"><strong>Looking for:</strong> {skills}</p>'
+        if contact:
+            cs = contact
+            if contact_email:
+                cs += f' (<a href="mailto:{contact_email}">{contact_email}</a>)'
+            details += f'<p class="detail"><strong>Contact:</strong> {cs}</p>'
+
+        # Link the title to the individual job page (required for JBoard scraper)
+        cards_html += f"""
+        <article class="opp-card" id="{slug}">
+            <div class="card-header">
+                <span class="category-badge" style="color:{badge_fg};background:{badge_bg}">{category}</span>
+                <span class="org">{org}</span>
+            </div>
+            <h2><a href="jobs/{slug}.html">{title}</a></h2>
+            <div class="pills">{pills}</div>
+            <p class="desc">{desc_preview}</p>
+            {details}
+            <div class="card-footer">{apply_btn}</div>
+        </article>
+        """
+
+    today = date.today().isoformat()
+    count = len(items)
+    opp_word = "opportunities" if count != 1 else "opportunity"
+    empty = '<div class="empty-state">No approved opportunities at this time. Check back soon!</div>'
+
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eastside Leadership Initiative - Open Opportunities</title>
+    <meta name="description" content="Board seats, government commissions, volunteer positions, and leadership development programs across the Eastside.">
+    <style>{SHARED_STYLE}
+        .subheader {{
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            padding: .75rem 1.5rem;
+            text-align: center;
+            font-size: .875rem;
+            color: var(--text-muted);
+        }}
+        .opp-card {{
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            transition: box-shadow .15s;
+        }}
+        .opp-card:hover {{ box-shadow: 0 2px 12px rgba(0,0,0,.08); }}
+        .card-header {{ display: flex; align-items: center; gap: .75rem; margin-bottom: .5rem; flex-wrap: wrap; }}
+        .opp-card h2 {{ font-size: 1.15rem; font-weight: 600; margin-bottom: .5rem; }}
+        .opp-card h2 a {{ color: var(--text); text-decoration: none; }}
+        .opp-card h2 a:hover {{ color: var(--accent); }}
+        .desc {{ font-size: .9rem; color: var(--text-muted); margin-bottom: .75rem; }}
+        .card-footer {{ margin-top: 1rem; display: flex; gap: .75rem; }}
+        .empty-state {{ text-align: center; padding: 3rem 1rem; color: var(--text-muted); }}
+        @media (max-width: 600px) {{ .opp-card {{ padding: 1rem; }} }}
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Eastside Leadership Initiative</h1>
+        <p>Connecting Eastside leaders with service, training, and professional development</p>
+    </header>
+    <div class="subheader">
+        {count} open {opp_word} &middot; Updated {today} &middot;
+        <a href="https://eli.bellevuechamber.org" target="_blank">View full board at eli.bellevuechamber.org</a>
+    </div>
+    <div class="container">
+        {cards_html if cards_html else empty}
+    </div>
+    <footer>
+        <p>Powered by the <a href="https://www.bellevuechamber.org/eli/">Bellevue Chamber of Commerce</a> Eastside Leadership Initiative</p>
+        <p>This page is auto-generated from approved opportunities. Visit <a href="https://eli.bellevuechamber.org">eli.bellevuechamber.org</a> for the full searchable board.</p>
+    </footer>
+</body>
+</html>"""
+
+
+# ---------------------------------------------------------------------------
+# Entry point
+# ---------------------------------------------------------------------------
+
+if __name__ == "__main__":
+    print("=== ELI JBoard Feed Generator (GitHub Actions) ===")
+    print("Fetching approved items from Monday.com...")
+    items = get_approved_items()
+    print(f"  Found {len(items)} approved opportunities")
+
+    # Generate individual job detail pages in jobs/
+    jobs_dir = Path("jobs")
+
+    # Remove all existing .html files in jobs/ so stale/expired pages are cleaned up
+    if jobs_dir.exists():
+        for old_page in jobs_dir.glob("*.html"):
+            old_page.unlink()
+    else:
+        jobs_dir.mkdir()
+
+    for item in items:
+        slug = make_slug(item.get("name", "untitled"))
+        page_html = generate_job_page(item, slug)
+        (jobs_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
+
+    print(f"  Written {len(items)} individual job pages to jobs/")
+
+    # Generate the index listing page
+    html = generate_html(items)
+    Path("index.html").write_text(html, encoding="utf-8")
+    print(f"  Written index.html ({len(html):,} bytes)")
+    print("  Done. GitHub Actions will commit and push.")
