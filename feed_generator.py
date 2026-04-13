@@ -511,6 +511,38 @@ def generate_html(items):
 
 
 # ---------------------------------------------------------------------------
+# Move approved -> posted after feed generation
+# ---------------------------------------------------------------------------
+
+POSTED_GROUP_ID = "group_mm1xnwz"
+
+
+def _move_to_posted(items):
+    """Move approved items to 'Posted' group so they drop off the next feed.
+
+    JBoard imports from the feed within ~24 hours. Once an item has been
+    published to the feed and pushed to GitHub Pages, moving it to 'Posted'
+    keeps the feed lean and avoids hitting JBoard's import limit.
+    """
+    moved = 0
+    for item in items:
+        item_id = item.get("id")
+        if not item_id:
+            continue
+        try:
+            query = """
+            mutation ($itemId: ID!, $groupId: String!) {
+                move_item_to_group(item_id: $itemId, group_id: $groupId) { id }
+            }
+            """
+            _monday_query(query, {"itemId": str(item_id), "groupId": POSTED_GROUP_ID})
+            moved += 1
+        except Exception as e:
+            print(f"  WARNING: Could not move '{item.get('name')}' to Posted: {e}")
+    print(f"  Moved {moved}/{len(items)} items to 'Posted' group")
+
+
+# ---------------------------------------------------------------------------
 # Main entry point
 # ---------------------------------------------------------------------------
 
@@ -542,4 +574,10 @@ if __name__ == "__main__":
     index_html = generate_html(items)
     Path("index.html").write_text(index_html, encoding="utf-8")
     print(f"  Written index.html ({len(index_html):,} bytes)")
+
+    # Move items from Approved -> Posted so they drop off the next feed
+    if items:
+        print("Moving approved items to 'Posted' group...")
+        _move_to_posted(items)
+
     print("  Done. GitHub Actions will commit and push.")
