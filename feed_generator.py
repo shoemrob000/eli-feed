@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Standalone ELI JBoard feed generator for GitHub Actions.
 
-Queries Monday.com for approved opportunities, writes index.html (listing page)
-and individual jobs/{slug}.html pages (one per opportunity).
-
-All JobPosting JSON-LD is placed in <head> for maximum parser compatibility.
-The listing page carries a single JSON array of all JobPosting objects in <head>;
-individual pages each carry one JobPosting object in <head>.
+Queries Monday.com for approved opportunities and writes:
+  - index.html      : listing page with all JobPosting JSON-LD in <head>
+  - jobs/{slug}.html : one detail page per opportunity
 
 Requires: MONDAY_API_TOKEN environment variable
 Run from: eli-feed repo root
+
+This standalone version mirrors the output of the local jboard_feed.py
+without requiring the full eli_scraper package.
 """
 import json
 import os
@@ -25,20 +25,21 @@ MONDAY_BOARD_ID = 18406083209
 BASE_URL = "https://shoemrob000.github.io/eli-feed"
 
 COL_IDS = [
-    "long_text_mm1xk79e",  # Description
-    "text_mm1xtwvz",       # Organization
-    "color_mm1xqs13",      # ELI Category
-    "text_mm1xrs09",       # Location
-    "link_mm1xm97c",       # Application URL
-    "date_mm1xzjpp",       # Application Deadline
-    "color_mm1x83bw",      # Review Status
-    "date_mm1xb7me",       # Date Found
-    "text_mm1xk54r",       # Time Commitment
-    "text_mm1x82h0",       # Residency Requirement
-    "text_mm1xjj2d",       # Skills/Expertise Sought
-    "text_mm1xax9d",       # Contact Name
-    "email_mm1xw4yg",      # Contact Email
-    "link_mm1xnf68",       # Source URL
+    "long_text_mm1xk79e",   # Description
+    "text_mm1xtwvz",         # Organization
+    "link_mm1x7c53",         # Organization Website
+    "color_mm1xqs13",        # ELI Category
+    "text_mm1xrs09",         # Location
+    "link_mm1xm97c",         # Application URL
+    "date_mm1xzjpp",         # Application Deadline
+    "link_mm1xnf68",         # Source URL
+    "color_mm1x83bw",        # Review Status
+    "date_mm1xb7me",         # Date Found
+    "text_mm1xk54r",         # Time Commitment
+    "text_mm1x82h0",         # Residency Requirement
+    "text_mm1xjj2d",         # Skills/Expertise Sought
+    "text_mm1xax9d",         # Contact Name
+    "email_mm1xw4yg",        # Contact Email
 ]
 
 CAT_COLORS = {
@@ -134,26 +135,28 @@ def _monday_query(query_str, variables=None):
 def get_approved_items():
     col_ids_str = '", "'.join(COL_IDS)
     query_str = """
-        query ($boardId: [ID!]!) {
-            boards(ids: $boardId) {
-                items_page(limit: 500) {
-                    items {
-                        id
-                        name
-                        group { id title }
-                        column_values(ids: ["%s"]) {
-                            id text value
-                        }
+    query ($boardId: [ID!]!) {
+        boards(ids: $boardId) {
+            items_page(limit: 500) {
+                items {
+                    id
+                    name
+                    group { id title }
+                    column_values(ids: ["%s"]) {
+                        id text value
                     }
                 }
             }
         }
+    }
     """ % col_ids_str
 
     data = _monday_query(query_str, {"boardId": [str(MONDAY_BOARD_ID)]})
     all_items = data["boards"][0]["items_page"]["items"]
 
     approved = []
+    today_str = date.today().isoformat()
+
     for item in all_items:
         group_title = item.get("group", {}).get("title", "")
         review_status = ""
@@ -171,9 +174,10 @@ def get_approved_items():
                             parsed[cv["id"] + "_url"] = val["url"]
                     except (json.JSONDecodeError, TypeError):
                         pass
+
             # Skip items whose deadline has already passed
             deadline = parsed.get("date_mm1xzjpp", "")
-            if deadline and deadline < date.today().isoformat():
+            if deadline and deadline < today_str:
                 continue
 
             approved.append(parsed)
@@ -193,23 +197,17 @@ def make_slug(title):
 
 
 def build_jsonld(item, page_url):
-    """Build a JobPosting JSON-LD dict for one opportunity.
-
-    page_url should be the canonical URL of the individual job detail page so
-    JBoard (and Google) resolve the listing to a stable URL on this domain.
-    """
-    title       = item.get("name", "Untitled Opportunity")
+    title = item.get("name", "Untitled Opportunity")
     description = item.get("long_text_mm1xk79e", "")
-    org_name    = item.get("text_mm1xtwvz", "")
-    location    = item.get("text_mm1xrs09", "")
-    apply_url   = item.get("link_mm1xm97c_url", "")
-    source_url  = item.get("link_mm1xnf68_url", "")
-    deadline    = item.get("date_mm1xzjpp", "")
-    date_found  = item.get("date_mm1xb7me", "")
-    category    = item.get("color_mm1xqs13", "")
+    org_name = item.get("text_mm1xtwvz", "")
+    location = item.get("text_mm1xrs09", "")
+    apply_url = item.get("link_mm1xm97c_url", "")
+    source_url = item.get("link_mm1xnf68_url", "")
+    deadline = item.get("date_mm1xzjpp", "")
+    date_found = item.get("date_mm1xb7me", "")
+    category = item.get("color_mm1xqs13", "")
 
     emp_type = "OTHER" if "leadership" in category.lower() else "VOLUNTEER"
-
     city = location.split(",")[0].strip() if location else ""
 
     valid_through = deadline
@@ -221,8 +219,9 @@ def build_jsonld(item, page_url):
             valid_through = (date.today() + timedelta(days=90)).isoformat()
 
     date_posted = date_found or date.today().isoformat()
+    listing_url = apply_url or source_url or page_url
 
-    jsonld = {
+    return {
         "@context": "https://schema.org",
         "@type": "JobPosting",
         "title": title,
@@ -249,40 +248,59 @@ def build_jsonld(item, page_url):
             "name": "ELI Monday ID",
             "value": f"eli-{item.get('id', '')}",
         },
-        "url": apply_url or source_url or page_url,
+        "url": listing_url,
         "directApply": bool(apply_url),
     }
-    return jsonld
 
 
 # ---------------------------------------------------------------------------
-# Individual job detail page generator
+# Feed-level dedup
+# ---------------------------------------------------------------------------
+
+def _dedup_feed_items(items):
+    """Remove duplicate items by normalized title, keeping the most recent."""
+    seen = {}
+    for item in items:
+        title = item.get("name", "").lower().strip()
+        norm = re.sub(r"[^\w\s]", "", title)
+        norm = re.sub(r"\s+", " ", norm)
+
+        if norm in seen:
+            existing = seen[norm]
+            existing_date = existing.get("date_mm1xb7me", "")
+            new_date = item.get("date_mm1xb7me", "")
+            if new_date > existing_date:
+                print(f"  DEDUP: Keeping newer '{item['name']}' over '{existing['name']}'")
+                seen[norm] = item
+            else:
+                print(f"  DEDUP: Skipping duplicate '{item['name']}' (keeping '{existing['name']}')")
+        else:
+            seen[norm] = item
+
+    return list(seen.values())
+
+
+# ---------------------------------------------------------------------------
+# Individual job detail page
 # ---------------------------------------------------------------------------
 
 def generate_job_page(item, slug):
-    """Return full HTML for a single job detail page at jobs/{slug}.html.
-
-    Contains one JobPosting JSON-LD block in <head> for maximum parser
-    compatibility.  JBoard's headless browser visits these pages after
-    following links from the listing page.
-    """
-    title        = item.get("name", "Untitled Opportunity")
-    org          = item.get("text_mm1xtwvz", "")
-    location     = item.get("text_mm1xrs09", "")
-    description  = item.get("long_text_mm1xk79e", "")
-    apply_url    = item.get("link_mm1xm97c_url", "") or item.get("link_mm1xnf68_url", "")
-    deadline     = item.get("date_mm1xzjpp", "")
-    category     = item.get("color_mm1xqs13", "")
-    time_commit  = item.get("text_mm1xk54r", "")
-    residency    = item.get("text_mm1x82h0", "")
-    skills       = item.get("text_mm1xjj2d", "")
-    contact      = item.get("text_mm1xax9d", "")
+    title = item.get("name", "Untitled Opportunity")
+    org = item.get("text_mm1xtwvz", "")
+    location = item.get("text_mm1xrs09", "")
+    description = item.get("long_text_mm1xk79e", "")
+    apply_url = item.get("link_mm1xm97c_url", "") or item.get("link_mm1xnf68_url", "")
+    deadline = item.get("date_mm1xzjpp", "")
+    category = item.get("color_mm1xqs13", "")
+    time_commit = item.get("text_mm1xk54r", "")
+    residency = item.get("text_mm1x82h0", "")
+    skills = item.get("text_mm1xjj2d", "")
+    contact = item.get("text_mm1xax9d", "")
     contact_email = item.get("email_mm1xw4yg", "")
 
     badge_fg, badge_bg = CAT_COLORS.get(category, ("#555", "#f0f0f0"))
     page_url = f"{BASE_URL}/jobs/{slug}.html"
     jsonld_block = json.dumps(build_jsonld(item, page_url), indent=2)
-
     desc_meta = re.sub(r"\s+", " ", description[:160]).strip()
 
     pills = ""
@@ -359,38 +377,30 @@ def generate_job_page(item, slug):
 
 
 # ---------------------------------------------------------------------------
-# Index / listing page generator
+# Index / listing page
 # ---------------------------------------------------------------------------
 
 def generate_html(items):
-    """Return full HTML for the index listing page.
-
-    All JobPosting JSON-LD is collected into a single <script> array in <head>
-    so any structured-data parser (JBoard, Google, etc.) finds it reliably.
-    Title links point to individual jobs/{slug}.html pages using absolute URLs.
-    """
     cards_html = ""
     all_jsonld = []
 
     for item in items:
-        title        = item.get("name", "")
-        org          = item.get("text_mm1xtwvz", "")
-        location     = item.get("text_mm1xrs09", "")
-        description  = item.get("long_text_mm1xk79e", "")
-        apply_url    = item.get("link_mm1xm97c_url", "") or item.get("link_mm1xnf68_url", "")
-        deadline     = item.get("date_mm1xzjpp", "")
-        category     = item.get("color_mm1xqs13", "")
-        time_commit  = item.get("text_mm1xk54r", "")
-        residency    = item.get("text_mm1x82h0", "")
-        skills       = item.get("text_mm1xjj2d", "")
-        contact      = item.get("text_mm1xax9d", "")
+        title = item.get("name", "")
+        org = item.get("text_mm1xtwvz", "")
+        location = item.get("text_mm1xrs09", "")
+        description = item.get("long_text_mm1xk79e", "")
+        apply_url = item.get("link_mm1xm97c_url", "") or item.get("link_mm1xnf68_url", "")
+        deadline = item.get("date_mm1xzjpp", "")
+        category = item.get("color_mm1xqs13", "")
+        time_commit = item.get("text_mm1xk54r", "")
+        residency = item.get("text_mm1x82h0", "")
+        skills = item.get("text_mm1xjj2d", "")
+        contact = item.get("text_mm1xax9d", "")
         contact_email = item.get("email_mm1xw4yg", "")
         slug = make_slug(title)
 
         badge_fg, badge_bg = CAT_COLORS.get(category, ("#555", "#f0f0f0"))
-
-        desc_preview = (description[:250].rsplit(" ", 1)[0] + "...") \
-            if len(description) > 250 else description
+        desc_preview = (description[:250].rsplit(" ", 1)[0] + "...") if len(description) > 250 else description
         desc_preview = desc_preview.replace("\n", " ").replace("\r", " ")
 
         pills = ""
@@ -413,10 +423,10 @@ def generate_html(items):
         if skills:
             details += f'<p class="detail"><strong>Looking for:</strong> {skills}</p>'
         if contact:
-            cs = contact
+            contact_str = contact
             if contact_email:
-                cs += f' (<a href="mailto:{contact_email}">{contact_email}</a>)'
-            details += f'<p class="detail"><strong>Contact:</strong> {cs}</p>'
+                contact_str += f' (<a href="mailto:{contact_email}">{contact_email}</a>)'
+            details += f'<p class="detail"><strong>Contact:</strong> {contact_str}</p>'
 
         page_url = f"{BASE_URL}/jobs/{slug}.html"
         all_jsonld.append(build_jsonld(item, page_url))
@@ -442,7 +452,7 @@ def generate_html(items):
     today = date.today().isoformat()
     count = len(items)
     opp_word = "opportunities" if count != 1 else "opportunity"
-    empty = '<div class="empty-state">No approved opportunities at this time. Check back soon!</div>'
+    empty = '<div class="empty-state"><p>No approved opportunities at this time. Check back soon!</p></div>'
 
     return f"""<!DOCTYPE html>
 <html lang="en">
@@ -501,34 +511,35 @@ def generate_html(items):
 
 
 # ---------------------------------------------------------------------------
-# Entry point
+# Main entry point
 # ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     print("=== ELI JBoard Feed Generator (GitHub Actions) ===")
+
     print("Fetching approved items from Monday.com...")
     items = get_approved_items()
     print(f"  Found {len(items)} approved opportunities")
 
-    # Generate individual job detail pages in jobs/
+    # Feed-level dedup
+    items = _dedup_feed_items(items)
+    print(f"  After dedup: {len(items)} unique opportunities")
+
+    # Clean up existing job pages
     jobs_dir = Path("jobs")
-
-    # Remove all existing .html files in jobs/ so stale/expired pages are cleaned up
     if jobs_dir.exists():
-        for old_page in jobs_dir.glob("*.html"):
-            old_page.unlink()
-    else:
-        jobs_dir.mkdir()
+        shutil.rmtree(jobs_dir)
+    jobs_dir.mkdir(exist_ok=True)
 
+    # Generate individual job pages
     for item in items:
         slug = make_slug(item.get("name", "untitled"))
-        page_html = generate_job_page(item, slug)
-        (jobs_dir / f"{slug}.html").write_text(page_html, encoding="utf-8")
-
+        html = generate_job_page(item, slug)
+        (jobs_dir / f"{slug}.html").write_text(html, encoding="utf-8")
     print(f"  Written {len(items)} individual job pages to jobs/")
 
-    # Generate the index listing page
-    html = generate_html(items)
-    Path("index.html").write_text(html, encoding="utf-8")
-    print(f"  Written index.html ({len(html):,} bytes)")
+    # Generate index listing page
+    index_html = generate_html(items)
+    Path("index.html").write_text(index_html, encoding="utf-8")
+    print(f"  Written index.html ({len(index_html):,} bytes)")
     print("  Done. GitHub Actions will commit and push.")

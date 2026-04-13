@@ -39,8 +39,6 @@ jobs:
         run: |
           git config user.name "ELI Feed Bot"
           git config user.email "noreply@bellevuechamber.org"
-          git add index.html
-          git add jobs/ 2>/dev/null || true
-          git add -u jobs/ 2>/dev/null || true
+          git add index.html jobs/
           git diff --staged --quiet && echo "No changes to commit" || git commit -m "Regenerate ELI feed [bot]"
           git push
